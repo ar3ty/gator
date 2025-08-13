@@ -1,0 +1,1 @@
+**gator** is an RSS feed aggregator written in *golang*
