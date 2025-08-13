@@ -40,7 +40,10 @@ func main() {
 	cmds.register("login", handlerLogin)
 	cmds.register("register", handlerRegister)
 	cmds.register("reset", handlerReset)
-	cmds.register("users", handlerGetUsers)
+	cmds.register("users", handlerListUsers)
+	cmds.register("agg", handlerAggregate)
+	cmds.register("addfeed", handlerAddFeed)
+	cmds.register("feeds", handlerListFeeds)
 
 	inline := os.Args
 	if len(inline) < 2 {
