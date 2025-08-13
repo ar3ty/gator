@@ -1,7 +1,10 @@
 package main
 
 import (
+	"context"
 	"database/sql"
+	"errors"
+	"fmt"
 	"log"
 	"os"
 
@@ -13,6 +16,20 @@ import (
 type state struct {
 	db  *database.Queries
 	cfg *config.Config
+}
+
+func middlewareLoggedIn(handler func(st *state, cmd command, user database.User) error) func(*state, command) error {
+	return func(st *state, cmd command) error {
+		currentUserName := st.cfg.CurrentUserName
+		user, err := st.db.GetUser(context.Background(), currentUserName)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return fmt.Errorf("no login user exists: %w", err)
+			}
+			return fmt.Errorf("cannot get login user: %w", err)
+		}
+		return handler(st, cmd, user)
+	}
 }
 
 func main() {
@@ -42,8 +59,10 @@ func main() {
 	cmds.register("reset", handlerReset)
 	cmds.register("users", handlerListUsers)
 	cmds.register("agg", handlerAggregate)
-	cmds.register("addfeed", handlerAddFeed)
+	cmds.register("addfeed", middlewareLoggedIn(handlerAddFeed))
 	cmds.register("feeds", handlerListFeeds)
+	cmds.register("follow", middlewareLoggedIn(handlerFollow))
+	cmds.register("following", middlewareLoggedIn(handlerFollowing))
 
 	inline := os.Args
 	if len(inline) < 2 {

@@ -11,17 +11,9 @@ import (
 	"github.com/google/uuid"
 )
 
-func handlerAddFeed(st *state, cmd command) error {
+func handlerAddFeed(st *state, cmd command, user database.User) error {
 	if len(cmd.args) != 2 {
 		return fmt.Errorf("usage: %s <name> <url>", cmd.name)
-	}
-	currentUser := st.cfg.CurrentUserName
-	user, err := st.db.GetUser(context.Background(), currentUser)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return fmt.Errorf("no user exists: %w", err)
-		}
-		return fmt.Errorf("cannot get user: %w", err)
 	}
 
 	params := database.CreateFeedParams{
@@ -37,9 +29,24 @@ func handlerAddFeed(st *state, cmd command) error {
 	if err != nil {
 		return fmt.Errorf("error creating feed: %w", err)
 	}
-
 	fmt.Println("Feed has been successfully created.")
-	printFeed(feed)
+	printFeed(feed, user)
+
+	feedFollowParams := database.CreateFeedFollowParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+		UserID:    user.ID,
+		FeedID:    feed.ID,
+	}
+
+	_, err = st.db.CreateFeedFollow(context.Background(), feedFollowParams)
+	if err != nil {
+		return fmt.Errorf("cannot create feed follow: %w", err)
+	}
+
+	println("New feed follow is created:")
+	printFeedFollow(user.Name, feed.Name)
 	return nil
 }
 
@@ -56,23 +63,28 @@ func handlerListFeeds(st *state, cmd command) error {
 		return fmt.Errorf("cannot get feed: %w", err)
 	}
 
+	if len(feeds) == 0 {
+		fmt.Println("No feed found.")
+		return nil
+	}
+
+	fmt.Printf("Found %d feeds.\n", len(feeds))
 	for i, feed := range feeds {
 		fmt.Printf("- - - Feed %d - - -\n", i)
-		printFeed(feed)
-		name, err := st.db.GetUserByID(context.Background(), feed.UserID)
+		user, err := st.db.GetUserByID(context.Background(), feed.UserID)
 		if err != nil {
-			return fmt.Errorf("couldn't get username by id: %w", err)
+			return fmt.Errorf("couldn't get user by id: %w", err)
 		}
-		fmt.Printf("Created by %s\n", name)
+		printFeed(feed, user)
 		fmt.Printf("- - - - - - - - - -\n")
 	}
 
 	return nil
 }
 
-func printFeed(feed database.Feed) {
+func printFeed(feed database.Feed, user database.User) {
 	fmt.Printf("ID:   		%v\n", feed.ID)
 	fmt.Printf("Name: 		%s\n", feed.Name)
 	fmt.Printf("URL:   		%s\n", feed.Url)
-	fmt.Printf("UserID: 	%v\n", feed.UserID)
+	fmt.Printf("User: 		%s\n", user.Name)
 }
