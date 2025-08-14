@@ -19,9 +19,9 @@ func handlerFollow(st *state, cmd command, user database.User) error {
 	feedToFollow, err := st.db.GetFeedByURL(context.Background(), cmd.args[0])
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return fmt.Errorf("feed doesn't exist: %w", err)
+			return fmt.Errorf("feed doesn't exist:\n %w", err)
 		}
-		return fmt.Errorf("cannot find feed by url: %w", err)
+		return fmt.Errorf("cannot find feed by url:\n %w", err)
 	}
 
 	params := database.CreateFeedFollowParams{
@@ -50,9 +50,9 @@ func handlerUnfollow(st *state, cmd command, user database.User) error {
 	feedToUnfollow, err := st.db.GetFeedByURL(context.Background(), cmd.args[0])
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return fmt.Errorf("feed doesn't exist: %w", err)
+			return fmt.Errorf("feed doesn't exist:\n %w", err)
 		}
-		return fmt.Errorf("cannot find feed by url: %w", err)
+		return fmt.Errorf("cannot find feed by url:\n %w", err)
 	}
 
 	params := database.DeleteFeedFollowParams{
@@ -62,7 +62,7 @@ func handlerUnfollow(st *state, cmd command, user database.User) error {
 
 	err = st.db.DeleteFeedFollow(context.Background(), params)
 	if err != nil {
-		return fmt.Errorf("cannot delete feed follow: %w", err)
+		return fmt.Errorf("cannot delete feed follow:\n %w", err)
 	}
 
 	fmt.Printf("User %s unfollowed %s", user.Name, feedToUnfollow.Url)
@@ -77,9 +77,9 @@ func handlerFollowing(st *state, cmd command, user database.User) error {
 	feedsFollowed, err := st.db.GetFeedFollowsForUser(context.Background(), user.ID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return fmt.Errorf("follows don't exist: %w", err)
+			return fmt.Errorf("follows don't exist:\n %w", err)
 		}
-		return fmt.Errorf("cannot find follows: %w", err)
+		return fmt.Errorf("cannot find follows:\n %w", err)
 	}
 
 	if len(feedsFollowed) == 0 {

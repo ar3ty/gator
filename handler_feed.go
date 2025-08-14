@@ -42,7 +42,7 @@ func handlerAddFeed(st *state, cmd command, user database.User) error {
 
 	_, err = st.db.CreateFeedFollow(context.Background(), feedFollowParams)
 	if err != nil {
-		return fmt.Errorf("cannot create feed follow: %w", err)
+		return fmt.Errorf("cannot create feed follow:\n %w", err)
 	}
 
 	println("New feed follow is created:")
@@ -73,7 +73,7 @@ func handlerListFeeds(st *state, cmd command) error {
 		fmt.Printf("- - - Feed %d - - -\n", i)
 		user, err := st.db.GetUserByID(context.Background(), feed.UserID)
 		if err != nil {
-			return fmt.Errorf("couldn't get user by id: %w", err)
+			return fmt.Errorf("couldn't get user by id:\n %w", err)
 		}
 		printFeed(feed, user)
 		fmt.Printf("- - - - - - - - - -\n")

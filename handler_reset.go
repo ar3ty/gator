@@ -12,7 +12,7 @@ func handlerReset(st *state, cmd command) error {
 
 	err := st.db.Reset(context.Background())
 	if err != nil {
-		return fmt.Errorf("cannot reset db: %w", err)
+		return fmt.Errorf("cannot reset db:\n %w", err)
 	}
 
 	fmt.Println("db was successfully reset")

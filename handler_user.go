@@ -32,7 +32,7 @@ func handlerRegister(st *state, cmd command) error {
 
 	err = st.cfg.SetUser(params.Name)
 	if err != nil {
-		return fmt.Errorf("current user setting failed: %w", err)
+		return fmt.Errorf("current user setting failed:\n %w", err)
 	}
 	fmt.Println("User has been successfully set.")
 	return nil
@@ -47,14 +47,14 @@ func handlerLogin(st *state, cmd command) error {
 	_, err := st.db.GetUser(context.Background(), userName)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return fmt.Errorf("user doesn't exist: %w", err)
+			return fmt.Errorf("user doesn't exist:\n %w", err)
 		}
-		return fmt.Errorf("cannot find user: %w", err)
+		return fmt.Errorf("cannot find user:\n %w", err)
 	}
 
 	err = st.cfg.SetUser(userName)
 	if err != nil {
-		return fmt.Errorf("login failed: %w", err)
+		return fmt.Errorf("login failed:\n %w", err)
 	}
 	fmt.Println("User has been successfully set.")
 	return nil
@@ -68,9 +68,9 @@ func handlerListUsers(st *state, cmd command) error {
 	users, err := st.db.GetUsers(context.Background())
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return fmt.Errorf("no user exists: %w", err)
+			return fmt.Errorf("no user exists:\n %w", err)
 		}
-		return fmt.Errorf("cannot get users: %w", err)
+		return fmt.Errorf("cannot get users:\n %w", err)
 	}
 
 	for _, user := range users {
